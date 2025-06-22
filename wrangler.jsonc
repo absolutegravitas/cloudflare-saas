@@ -74,16 +74,16 @@
 
   "d1_databases": [
     {
-      "binding": "NEXT_TAG_CACHE_D1",
-      "database_name": "prasitco-db",
-      "database_id": "ca18c0dc-a4f1-4f32-a8e6-a4de3aff8f7f",
+      "binding": "DB",
+      "database_name": "absolutegravitas-db",
+      "database_id": "aa3347bb-577c-4ed4-899d-40b5d616d1d4",
       "migrations_dir": "src/db/migrations"
     }
   ],
   "kv_namespaces": [
     {
-      "binding": "NEXT_INC_CACHE_KV",
-      "id": "1bfb99c541274509af23e5babb3feb42"
+      "binding": "KV_BINDING",
+      "id": "739361a33ebb424abde2af24cc22f587"
     }
   ]
 }
