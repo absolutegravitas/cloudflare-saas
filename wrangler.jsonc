@@ -4,8 +4,8 @@
  */
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "account_id": "82e5aa3e06eba55221231ef482269452",
-  "name": "absolutegravitas",
+  "account_id": "3b5fce02793458b3a2e8c0efc705fa85",
+  "name": "prasitco-worker",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-03-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -36,9 +36,9 @@
    * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
    */
   "vars": {
-    "EMAIL_FROM": "no-reply@notifications.agenticdev.agency",
-    "EMAIL_FROM_NAME": "AgenticDev.agency",
-    "EMAIL_REPLY_TO": "support@agenticdev.agency"
+    "EMAIL_FROM": "no-reply@notifications.prasit.co",
+    "EMAIL_FROM_NAME": "Prasit",
+    "EMAIL_REPLY_TO": "support@prasit.co"
   },
   /**
    * Note: Use secrets to store sensitive data.
@@ -52,7 +52,7 @@
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "cloudflare-workers-nextjs-saas-template"
+      "service": "prasitco-worker"
     }
   ],
 
@@ -75,15 +75,15 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "absolutegravitas-db",
-      "database_id": "aa3347bb-577c-4ed4-899d-40b5d616d1d4",
+      "database_name": "prasitco-db",
+      "database_id": "3976d85a-4021-419b-873f-c08d13ff50c1",
       "migrations_dir": "src/db/migrations"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "KV_BINDING",
-      "id": "739361a33ebb424abde2af24cc22f587"
+      "id": "10a8561f11064926ae430e741cf08eea"
     }
   ]
 }
