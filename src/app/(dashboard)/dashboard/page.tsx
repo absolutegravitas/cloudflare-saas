@@ -23,7 +23,7 @@ export default function Page() {
             Example
           </div>
         </div>
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min flex items-center justify-center">
+        <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min flex items-center justify-center">
           Example
         </div>
       </div>
