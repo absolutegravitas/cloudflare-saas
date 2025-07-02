@@ -1,9 +1,8 @@
-import withBundleAnalyzer from '@next/bundle-analyzer';
-import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare';
+import withBundleAnalyzer from "@next/bundle-analyzer";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 // added by create cloudflare to enable calling `getCloudflareContext()` in `next dev`
 initOpenNextCloudflareForDev();
-
 
 // TODO cache-control headers don't work for static files
 /** @type {import('next').NextConfig} */
@@ -12,13 +11,15 @@ const nextConfig = {
     typedRoutes: true,
   },
   eslint: {
-    ignoreDuringBuilds: process.env.SKIP_LINTER === 'true'
+    ignoreDuringBuilds: process.env.SKIP_LINTER === "true",
+    noUnusedLocals: false,
+    noUnusedParameters: false,
   },
   typescript: {
-    ignoreBuildErrors: process.env.SKIP_LINTER === 'true'
-  }
+    ignoreBuildErrors: process.env.SKIP_LINTER === "true",
+  },
 };
 
-export default process.env.ANALYZE === 'true'
+export default process.env.ANALYZE === "true"
   ? withBundleAnalyzer()(nextConfig)
   : nextConfig;
