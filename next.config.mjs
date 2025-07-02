@@ -8,7 +8,7 @@ initOpenNextCloudflareForDev();
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    typedRoutes: true,
+    typedRoutes: false, // set to false to avoid issues with `next dev` and `next build` MOTHER FUCKING CUNT FUCK OTHERWISE WILL CAUSE AN ERROR ON EVERY GODDAMN FUCKING URL STRING THAT IS A URL UNLESS IT IS SAFELY TYPED --- FUCK THAT
   },
   eslint: {
     ignoreDuringBuilds: process.env.SKIP_LINTER === "true",
