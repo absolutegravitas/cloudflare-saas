@@ -12,7 +12,10 @@ export function getSessionKey(userId: string, sessionId: string): string {
   return `${SESSION_PREFIX}${userId}:${sessionId}`;
 }
 
-type KVSessionUser = Exclude<Awaited<ReturnType<typeof getUserFromDB>>, undefined>;
+type KVSessionUser = Exclude<
+  Awaited<ReturnType<typeof getUserFromDB>>,
+  undefined
+>;
 
 export interface KVSession {
   id: string;
@@ -67,10 +70,11 @@ export const CURRENT_SESSION_VERSION = 2;
 
 export async function getKV() {
   const { env } = getCloudflareContext();
-  return env.NEXT_INC_CACHE_KV;
+  return env.KV_BINDING;
 }
 
-export interface CreateKVSessionParams extends Omit<KVSession, "id" | "createdAt" | "expiresAt"> {
+export interface CreateKVSessionParams
+  extends Omit<KVSession, "id" | "createdAt" | "expiresAt"> {
   sessionId: string;
   expiresAt: Date;
 }
@@ -82,7 +86,7 @@ export async function createKVSession({
   user,
   authenticationType,
   passkeyCredentialId,
-  teams
+  teams,
 }: CreateKVSessionParams): Promise<KVSession> {
   const { cf } = getCloudflareContext();
   const headersList = await headers();
@@ -101,12 +105,12 @@ export async function createKVSession({
     city: cf?.city,
     continent: cf?.continent,
     ip: await getIP(),
-    userAgent: headersList.get('user-agent'),
+    userAgent: headersList.get("user-agent"),
     user,
     authenticationType,
     passkeyCredentialId,
     teams,
-    version: CURRENT_SESSION_VERSION
+    version: CURRENT_SESSION_VERSION,
   };
 
   // Check if user has reached the session limit
@@ -124,23 +128,22 @@ export async function createKVSession({
 
     // Delete the oldest session
     const oldestSessionKey = sortedSessions?.[0]?.key;
-    const oldestSessionId = oldestSessionKey?.split(':')?.[2]; // Extract sessionId from key
+    const oldestSessionId = oldestSessionKey?.split(":")?.[2]; // Extract sessionId from key
 
     await deleteKVSession(oldestSessionId, userId);
   }
 
-  await kv.put(
-    getSessionKey(userId, sessionId),
-    JSON.stringify(session),
-    {
-      expirationTtl: Math.floor((expiresAt.getTime() - Date.now()) / 1000)
-    }
-  );
+  await kv.put(getSessionKey(userId, sessionId), JSON.stringify(session), {
+    expirationTtl: Math.floor((expiresAt.getTime() - Date.now()) / 1000),
+  });
 
   return session;
 }
 
-export async function getKVSession(sessionId: string, userId: string): Promise<KVSession | null> {
+export async function getKVSession(
+  sessionId: string,
+  userId: string
+): Promise<KVSession | null> {
   const kv = await getKV();
 
   if (!kv) {
@@ -150,7 +153,7 @@ export async function getKVSession(sessionId: string, userId: string): Promise<K
   const sessionStr = await kv.get(getSessionKey(userId, sessionId));
   if (!sessionStr) return null;
 
-  const session = JSON.parse(sessionStr) as KVSession
+  const session = JSON.parse(sessionStr) as KVSession;
 
   if (session?.user?.createdAt) {
     session.user.createdAt = new Date(session.user.createdAt);
@@ -161,7 +164,9 @@ export async function getKVSession(sessionId: string, userId: string): Promise<K
   }
 
   if (session?.user?.lastCreditRefreshAt) {
-    session.user.lastCreditRefreshAt = new Date(session.user.lastCreditRefreshAt);
+    session.user.lastCreditRefreshAt = new Date(
+      session.user.lastCreditRefreshAt
+    );
   }
 
   if (session?.user?.emailVerified) {
@@ -171,7 +176,11 @@ export async function getKVSession(sessionId: string, userId: string): Promise<K
   return session;
 }
 
-export async function updateKVSession(sessionId: string, userId: string, expiresAt: Date): Promise<KVSession | null> {
+export async function updateKVSession(
+  sessionId: string,
+  userId: string,
+  expiresAt: Date
+): Promise<KVSession | null> {
   const session = await getKVSession(sessionId, userId);
   if (!session) return null;
 
@@ -189,7 +198,7 @@ export async function updateKVSession(sessionId: string, userId: string, expires
     version: CURRENT_SESSION_VERSION,
     expiresAt: expiresAt.getTime(),
     user: updatedUser,
-    teams: teamsWithPermissions
+    teams: teamsWithPermissions,
   };
 
   const kv = await getKV();
@@ -202,14 +211,17 @@ export async function updateKVSession(sessionId: string, userId: string, expires
     getSessionKey(userId, sessionId),
     JSON.stringify(updatedSession),
     {
-      expirationTtl: Math.floor((expiresAt.getTime() - Date.now()) / 1000)
+      expirationTtl: Math.floor((expiresAt.getTime() - Date.now()) / 1000),
     }
   );
 
   return updatedSession;
 }
 
-export async function deleteKVSession(sessionId: string, userId: string): Promise<void> {
+export async function deleteKVSession(
+  sessionId: string,
+  userId: string
+): Promise<void> {
   const session = await getKVSession(sessionId, userId);
   if (!session) return;
 
@@ -233,8 +245,10 @@ export async function getAllSessionIdsOfUser(userId: string) {
 
   return sessions.keys.map((session) => ({
     key: session.name,
-    absoluteExpiration: session.expiration ? new Date(session.expiration * 1000) : undefined
-  }))
+    absoluteExpiration: session.expiration
+      ? new Date(session.expiration * 1000)
+      : undefined,
+  }));
 }
 
 /**
@@ -263,8 +277,13 @@ export async function updateAllSessionsOfUser(userId: string) {
     const sessionData = JSON.parse(session) as KVSession;
 
     // Only update non-expired sessions
-    if (sessionObj.absoluteExpiration && sessionObj.absoluteExpiration.getTime() > Date.now()) {
-      const ttlInSeconds = Math.floor((sessionObj.absoluteExpiration.getTime() - Date.now()) / 1000);
+    if (
+      sessionObj.absoluteExpiration &&
+      sessionObj.absoluteExpiration.getTime() > Date.now()
+    ) {
+      const ttlInSeconds = Math.floor(
+        (sessionObj.absoluteExpiration.getTime() - Date.now()) / 1000
+      );
 
       await kv.put(
         sessionObj.key,

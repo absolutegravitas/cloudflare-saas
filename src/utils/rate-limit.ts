@@ -24,7 +24,7 @@ function normalizeIP(ip: string): string {
   try {
     const addr = ipaddr.parse(ip);
 
-    if (addr.kind() === 'ipv6') {
+    if (addr.kind() === "ipv6") {
       // Get the first 64 bits for IPv6
       const ipv6 = addr as ipaddr.IPv6;
       const bytes = ipv6.toByteArray();
@@ -53,20 +53,21 @@ export async function checkRateLimit({
   const { env } = getCloudflareContext();
   const now = Math.floor(Date.now() / 1000);
 
-  if (!env?.NEXT_INC_CACHE_KV) {
+  if (!env?.KV_BINDING) {
     throw new Error("Can't connect to KV store");
   }
 
   // Normalize the key if it looks like an IP address
   const normalizedKey = ipaddr.isValid(key) ? normalizeIP(key) : key;
 
-  const windowKey = `rate-limit:${options.identifier}:${normalizedKey}:${Math.floor(
-    now / options.windowInSeconds
-  )}`;
+  const windowKey = `rate-limit:${
+    options.identifier
+  }:${normalizedKey}:${Math.floor(now / options.windowInSeconds)}`;
 
   // Get the current count from KV
-  const currentCount = parseInt((await env.NEXT_INC_CACHE_KV.get(windowKey)) || "0");
-  const reset = (Math.floor(now / options.windowInSeconds) + 1) * options.windowInSeconds;
+  const currentCount = parseInt((await env.KV_BINDING.get(windowKey)) || "0");
+  const reset =
+    (Math.floor(now / options.windowInSeconds) + 1) * options.windowInSeconds;
 
   if (currentCount >= options.limit) {
     return {
@@ -78,7 +79,7 @@ export async function checkRateLimit({
   }
 
   // Increment the counter
-  await env.NEXT_INC_CACHE_KV.put(windowKey, (currentCount + 1).toString(), {
+  await env.KV_BINDING.put(windowKey, (currentCount + 1).toString(), {
     expirationTtl: options.windowInSeconds,
   });
 

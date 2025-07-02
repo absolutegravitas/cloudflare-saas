@@ -2,14 +2,25 @@
 
 import { createServerAction, ZSAError } from "zsa";
 import { z } from "zod";
-import { generatePasskeyRegistrationOptions, verifyPasskeyRegistration } from "@/utils/webauthn";
+import {
+  generatePasskeyRegistrationOptions,
+  verifyPasskeyRegistration,
+} from "@/utils/webauthn";
 import { getDB } from "@/db";
 import { userTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { cookies, headers } from "next/headers";
-import { createSession, generateSessionToken, setSessionTokenCookie, canSignUp } from "@/utils/auth";
-import type { RegistrationResponseJSON, PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/types";
+import {
+  createSession,
+  generateSessionToken,
+  setSessionTokenCookie,
+  canSignUp,
+} from "@/utils/auth";
+import type {
+  RegistrationResponseJSON,
+  PublicKeyCredentialCreationOptionsJSON,
+} from "@simplewebauthn/types";
 import { withRateLimit, RATE_LIMITS } from "@/utils/with-rate-limit";
 import { getIP } from "@/utils/get-IP";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
@@ -27,99 +38,102 @@ const PASSKEY_USER_ID_COOKIE_NAME = "passkey_user_id";
 export const startPasskeyRegistrationAction = createServerAction()
   .input(passkeyEmailSchema)
   .handler(async ({ input }) => {
-    return withRateLimit(
-      async () => {
-        if (await isTurnstileEnabled() && input.captchaToken) {
-          const success = await validateTurnstileToken(input.captchaToken)
+    return withRateLimit(async () => {
+      if ((await isTurnstileEnabled()) && input.captchaToken) {
+        const success = await validateTurnstileToken(input.captchaToken);
 
-          if (!success) {
-            throw new ZSAError(
-              "INPUT_PARSE_ERROR",
-              "Please complete the captcha"
-            )
-          }
-        }
-
-        const db = getDB();
-
-        // Check if email is disposable
-        await canSignUp({ email: input.email });
-
-        const existingUser = await db.query.userTable.findFirst({
-          where: eq(userTable.email, input.email),
-        });
-
-        if (existingUser) {
+        if (!success) {
           throw new ZSAError(
-            "CONFLICT",
-            "An account with this email already exists"
+            "INPUT_PARSE_ERROR",
+            "Please complete the captcha"
           );
         }
+      }
 
-        const ipAddress = await getIP();
+      const db = getDB();
 
-        const [user] = await db.insert(userTable)
-          .values({
-            email: input.email,
-            firstName: input.firstName,
-            lastName: input.lastName,
-            signUpIpAddress: ipAddress,
-          })
-          .returning();
+      // Check if email is disposable
+      await canSignUp({ email: input.email });
 
-        if (!user) {
-          throw new ZSAError(
-            "INTERNAL_SERVER_ERROR",
-            "Failed to create user"
-          );
-        }
+      const existingUser = await db.query.userTable.findFirst({
+        where: eq(userTable.email, input.email),
+      });
 
-        // Generate passkey registration options
-        const options = await generatePasskeyRegistrationOptions(user.id, input.email);
+      if (existingUser) {
+        throw new ZSAError(
+          "CONFLICT",
+          "An account with this email already exists"
+        );
+      }
 
-        const cookieStore = await cookies();
+      const ipAddress = await getIP();
 
-        // Store the challenge in a cookie for verification
-        cookieStore.set(PASSKEY_CHALLENGE_COOKIE_NAME, options.challenge, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "strict",
-          path: "/",
-          maxAge: Math.floor(ms("10 minutes") / 1000),
-        });
+      const [user] = await db
+        .insert(userTable)
+        .values({
+          email: input.email,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          signUpIpAddress: ipAddress,
+        })
+        .returning();
 
-        // Store the user ID in a cookie for verification
-        cookieStore.set(PASSKEY_USER_ID_COOKIE_NAME, user.id, {
-          httpOnly: true,
-          secure: true,
-          sameSite: "strict",
-          path: "/",
-          maxAge: Math.floor(ms("10 minutes") / 1000),
-        });
+      if (!user) {
+        throw new ZSAError("INTERNAL_SERVER_ERROR", "Failed to create user");
+      }
 
-        // Convert options to the expected type
-        const optionsJSON: PublicKeyCredentialCreationOptionsJSON = {
-          rp: options.rp,
-          user: options.user,
-          challenge: options.challenge,
-          pubKeyCredParams: options.pubKeyCredParams,
-          timeout: options.timeout,
-          excludeCredentials: options.excludeCredentials,
-          authenticatorSelection: options.authenticatorSelection,
-          attestation: options.attestation,
-          extensions: options.extensions,
-        };
+      // Generate passkey registration options
+      const options = await generatePasskeyRegistrationOptions(
+        user.id,
+        input.email
+      );
 
-        return { optionsJSON };
-      },
-      RATE_LIMITS.SIGN_UP
-    );
+      const cookieStore = await cookies();
+
+      // Store the challenge in a cookie for verification
+      cookieStore.set(PASSKEY_CHALLENGE_COOKIE_NAME, options.challenge, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/",
+        maxAge: Math.floor(ms("10 minutes") / 1000),
+      });
+
+      // Store the user ID in a cookie for verification
+      cookieStore.set(PASSKEY_USER_ID_COOKIE_NAME, user.id, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/",
+        maxAge: Math.floor(ms("10 minutes") / 1000),
+      });
+
+      // Convert options to the expected type
+      const optionsJSON: PublicKeyCredentialCreationOptionsJSON = {
+        rp: options.rp,
+        user: options.user,
+        challenge: options.challenge,
+        pubKeyCredParams: options.pubKeyCredParams,
+        timeout: options.timeout,
+        excludeCredentials: options.excludeCredentials,
+        authenticatorSelection: options.authenticatorSelection,
+        attestation: options.attestation,
+        extensions: options.extensions,
+      };
+
+      return { optionsJSON };
+    }, RATE_LIMITS.SIGN_UP);
   });
 
 const completePasskeyRegistrationSchema = z.object({
-  response: z.custom<RegistrationResponseJSON>((val): val is RegistrationResponseJSON => {
-    return typeof val === "object" && val !== null && "id" in val && "rawId" in val;
-  }, "Invalid registration response"),
+  response: z.custom<RegistrationResponseJSON>(
+    (val): val is RegistrationResponseJSON => {
+      return (
+        typeof val === "object" && val !== null && "id" in val && "rawId" in val
+      );
+    },
+    "Invalid registration response"
+  ),
 });
 
 export const completePasskeyRegistrationAction = createServerAction()
@@ -130,10 +144,7 @@ export const completePasskeyRegistrationAction = createServerAction()
     const userId = cookieStore.get(PASSKEY_USER_ID_COOKIE_NAME)?.value;
 
     if (!challenge || !userId) {
-      throw new ZSAError(
-        "PRECONDITION_FAILED",
-        "Invalid registration session"
-      );
+      throw new ZSAError("PRECONDITION_FAILED", "Invalid registration session");
     }
 
     try {
@@ -153,23 +164,22 @@ export const completePasskeyRegistrationAction = createServerAction()
       });
 
       if (!user || !user.email) {
-        throw new ZSAError(
-          "INTERNAL_SERVER_ERROR",
-          "User not found"
-        );
+        throw new ZSAError("INTERNAL_SERVER_ERROR", "User not found");
       }
 
       // Generate verification token
       const { env } = getCloudflareContext();
       const verificationToken = createId();
-      const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_TOKEN_EXPIRATION_SECONDS * 1000);
+      const expiresAt = new Date(
+        Date.now() + EMAIL_VERIFICATION_TOKEN_EXPIRATION_SECONDS * 1000
+      );
 
-      if (!env?.NEXT_INC_CACHE_KV) {
+      if (!env?.KV_BINDING) {
         throw new Error("Can't connect to KV store");
       }
 
       // Save verification token in KV with expiration
-      await env.NEXT_INC_CACHE_KV.put(
+      await env.KV_BINDING.put(
         getVerificationTokenKey(verificationToken),
         JSON.stringify({
           userId: user.id,
@@ -193,14 +203,14 @@ export const completePasskeyRegistrationAction = createServerAction()
         token: sessionToken,
         userId,
         authenticationType: "passkey",
-        passkeyCredentialId: input.response.id
+        passkeyCredentialId: input.response.id,
       });
 
       // Set the session cookie
       await setSessionTokenCookie({
         token: sessionToken,
         userId,
-        expiresAt: new Date(session.expiresAt)
+        expiresAt: new Date(session.expiresAt),
       });
 
       // Clean up cookies
@@ -210,9 +220,6 @@ export const completePasskeyRegistrationAction = createServerAction()
       return { success: true };
     } catch (error) {
       console.error("Failed to register passkey:", error);
-      throw new ZSAError(
-        "PRECONDITION_FAILED",
-        "Failed to register passkey"
-      );
+      throw new ZSAError("PRECONDITION_FAILED", "Failed to register passkey");
     }
   });
