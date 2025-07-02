@@ -35,8 +35,16 @@ export async function withKVCache<T>(
   const result = await fn();
 
   // Cache the result with the specified TTL
+
+  // ms(ttl) returns a number (milliseconds) when given a string like "1h"
+
+  // ms can return a string or a number depending on input, so we must cast
+  const ttlMs = ms(ttl as any);
+  if (typeof ttlMs !== "number" || isNaN(ttlMs)) {
+    throw new Error(`Invalid TTL value: ${ttl}`);
+  }
   await kv.put(key, JSON.stringify(result), {
-    expirationTtl: Math.floor(ms(ttl) / 1000), // Convert ms to seconds for KV
+    expirationTtl: Math.floor(ttlMs / 1000), // Convert ms to seconds for KV
   });
 
   return result;
