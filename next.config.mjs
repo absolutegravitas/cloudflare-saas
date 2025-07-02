@@ -12,8 +12,6 @@ const nextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: process.env.SKIP_LINTER === "true",
-    noUnusedLocals: false,
-    noUnusedParameters: false,
   },
   typescript: {
     ignoreBuildErrors: process.env.SKIP_LINTER === "true",
