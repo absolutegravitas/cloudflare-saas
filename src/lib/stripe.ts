@@ -15,7 +15,7 @@ export function getStripe() {
   }
 
   stripeInstance = new Stripe(stripeSecretKey, {
-    apiVersion: "2025-05-28.basil",
+    // apiVersion: "2025-05-28.basil",
     typescript: true,
     httpClient: Stripe.createFetchHttpClient(),
   });
