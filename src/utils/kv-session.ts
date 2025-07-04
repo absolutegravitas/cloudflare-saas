@@ -70,7 +70,7 @@ export const CURRENT_SESSION_VERSION = 2;
 
 export async function getKV() {
   const { env } = getCloudflareContext();
-  return env.KV_BINDING;
+  return env.NEXT_INC_CACHE_KV;
 }
 
 export interface CreateKVSessionParams

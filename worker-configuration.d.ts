@@ -3,13 +3,13 @@
 // Runtime types generated with workerd@1.20250617.0 2025-03-01 global_fetch_strictly_public,nodejs_compat
 declare namespace Cloudflare {
   interface Env {
-    KV_BINDING: KVNamespace;
+    NEXT_INC_CACHE_KV: KVNamespace;
     EMAIL_FROM: "no-reply@notifications.prasit.co";
     EMAIL_FROM_NAME: "Prasit";
     EMAIL_REPLY_TO: "support@prasit.co";
     NEXTJS_ENV: string;
     AUTH_SECRET: string;
-    // NEXT_CACHE_DO_QUEUE: DurableObjectNamespace /* DOQueueHandler */;
+    NEXT_CACHE_DO_QUEUE: DurableObjectNamespace /* DOQueueHandler */;
     DB: D1Database;
     WORKER_SELF_REFERENCE: Fetcher /* prasitco-worker */;
     ASSETS: Fetcher;

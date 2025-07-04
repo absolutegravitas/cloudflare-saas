@@ -3,7 +3,13 @@
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useServerAction } from "zsa-react";
 import { googleSSOCallbackAction } from "./google-callback.action";
@@ -18,7 +24,11 @@ export default function GoogleCallbackClientComponent() {
   const state = searchParams.get("state");
   const hasCalledCallback = useRef(false);
 
-  const { execute: handleCallback, isPending, error } = useServerAction(googleSSOCallbackAction, {
+  const {
+    execute: handleCallback,
+    isPending,
+    error,
+  } = useServerAction(googleSSOCallbackAction, {
     onError: (error) => {
       toast.dismiss();
       toast.error(error.err?.message || "Failed to sign in with Google");
@@ -44,7 +54,7 @@ export default function GoogleCallbackClientComponent() {
         router.push("/sign-in");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    //// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, state]);
 
   if (isPending) {
@@ -95,7 +105,8 @@ export default function GoogleCallbackClientComponent() {
         <CardHeader>
           <CardTitle>Invalid callback</CardTitle>
           <CardDescription>
-            The sign in callback is invalid or has expired. Please try signing in again.
+            The sign in callback is invalid or has expired. Please try signing
+            in again.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -111,4 +122,3 @@ export default function GoogleCallbackClientComponent() {
     </div>
   );
 }
-

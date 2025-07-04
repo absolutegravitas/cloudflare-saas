@@ -17,15 +17,15 @@ export const verifyEmailAction = createServerAction()
     return withRateLimit(async () => {
       const { env } = getCloudflareContext();
 
-      if (!env?.KV_BINDING) {
+      if (!env?.NEXT_INC_CACHE_KV) {
         throw new Error("Can't connect to KV store");
       }
 
-      const verificationTokenStr = await env.KV_BINDING.get(
+      const verificationTokenStr = await env.NEXT_INC_CACHE_KV.get(
         getVerificationTokenKey(input.token)
       );
 
-      if (!env?.KV_BINDING) {
+      if (!env?.NEXT_INC_CACHE_KV) {
         throw new Error("Can't connect to KV store");
       }
 
@@ -71,7 +71,9 @@ export const verifyEmailAction = createServerAction()
         await updateAllSessionsOfUser(verificationToken.userId);
 
         // Delete the used token
-        await env.KV_BINDING.delete(getVerificationTokenKey(input.token));
+        await env.NEXT_INC_CACHE_KV.delete(
+          getVerificationTokenKey(input.token)
+        );
 
         // Add a small delay to ensure all updates are processed
         await new Promise((resolve) => setTimeout(resolve, 500));

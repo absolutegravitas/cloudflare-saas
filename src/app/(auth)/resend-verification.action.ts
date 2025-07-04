@@ -32,12 +32,12 @@ export const resendVerificationAction = createServerAction()
         Date.now() + EMAIL_VERIFICATION_TOKEN_EXPIRATION_SECONDS * 1000
       );
 
-      if (!env?.KV_BINDING) {
+      if (!env?.NEXT_INC_CACHE_KV) {
         throw new Error("Can't connect to KV store");
       }
 
       // Save verification token in KV with expiration
-      await env.KV_BINDING.put(
+      await env.NEXT_INC_CACHE_KV.put(
         getVerificationTokenKey(verificationToken),
         JSON.stringify({
           userId: session.user.id,

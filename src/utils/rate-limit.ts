@@ -53,7 +53,7 @@ export async function checkRateLimit({
   const { env } = getCloudflareContext();
   const now = Math.floor(Date.now() / 1000);
 
-  if (!env?.KV_BINDING) {
+  if (!env?.NEXT_INC_CACHE_KV) {
     throw new Error("Can't connect to KV store");
   }
 
@@ -65,7 +65,9 @@ export async function checkRateLimit({
   }:${normalizedKey}:${Math.floor(now / options.windowInSeconds)}`;
 
   // Get the current count from KV
-  const currentCount = parseInt((await env.KV_BINDING.get(windowKey)) || "0");
+  const currentCount = parseInt(
+    (await env.NEXT_INC_CACHE_KV.get(windowKey)) || "0"
+  );
   const reset =
     (Math.floor(now / options.windowInSeconds) + 1) * options.windowInSeconds;
 
@@ -79,7 +81,7 @@ export async function checkRateLimit({
   }
 
   // Increment the counter
-  await env.KV_BINDING.put(windowKey, (currentCount + 1).toString(), {
+  await env.NEXT_INC_CACHE_KV.put(windowKey, (currentCount + 1).toString(), {
     expirationTtl: options.windowInSeconds,
   });
 

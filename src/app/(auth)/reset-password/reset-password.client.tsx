@@ -14,7 +14,14 @@ import { useServerAction } from "zsa-react";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { resetPasswordSchema } from "@/schemas/reset-password.schema";
 import type { ResetPasswordSchema } from "@/schemas/reset-password.schema";
@@ -38,22 +45,25 @@ export default function ResetPasswordClientComponent() {
     if (token) {
       form.setValue("token", token);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const { execute: resetPassword, isSuccess } = useServerAction(resetPasswordAction, {
-    onError: (error) => {
-      toast.dismiss();
-      toast.error(error.err?.message);
-    },
-    onStart: () => {
-      toast.loading("Resetting password...");
-    },
-    onSuccess: () => {
-      toast.dismiss();
-      toast.success("Password reset successfully");
-    },
-  });
+  const { execute: resetPassword, isSuccess } = useServerAction(
+    resetPasswordAction,
+    {
+      onError: (error) => {
+        toast.dismiss();
+        toast.error(error.err?.message);
+      },
+      onStart: () => {
+        toast.loading("Resetting password...");
+      },
+      onSuccess: () => {
+        toast.dismiss();
+        toast.success("Password reset successfully");
+      },
+    }
+  );
 
   const onSubmit = async (data: ResetPasswordSchema) => {
     resetPassword(data);
@@ -66,7 +76,8 @@ export default function ResetPasswordClientComponent() {
           <CardHeader>
             <CardTitle>Password Reset Successfully</CardTitle>
             <CardDescription>
-              Your password has been reset. You can now log in with your new password.
+              Your password has been reset. You can now log in with your new
+              password.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -88,9 +99,7 @@ export default function ResetPasswordClientComponent() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Reset Password</CardTitle>
-          <CardDescription>
-            Enter your new password below.
-          </CardDescription>
+          <CardDescription>Enter your new password below.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -102,10 +111,7 @@ export default function ResetPasswordClientComponent() {
                   <FormItem>
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        {...field}
-                      />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -118,10 +124,7 @@ export default function ResetPasswordClientComponent() {
                   <FormItem>
                     <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
-                      <Input
-                        type="password"
-                        {...field}
-                      />
+                      <Input type="password" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

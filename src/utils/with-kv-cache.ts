@@ -19,7 +19,7 @@ export async function withKVCache<T>(
   }
 
   const { env } = await getCloudflareContext({ async: true });
-  const kv = env.KV_BINDING;
+  const kv = env.NEXT_INC_CACHE_KV;
 
   if (!kv) {
     throw new Error("Can't connect to KV store");

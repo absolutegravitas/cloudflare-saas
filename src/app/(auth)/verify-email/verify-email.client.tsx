@@ -3,7 +3,13 @@
 import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useServerAction } from "zsa-react";
 import { verifyEmailAction } from "./verify-email.action";
@@ -17,7 +23,11 @@ export default function VerifyEmailClientComponent() {
   const token = searchParams.get("token");
   const hasCalledVerification = useRef(false);
 
-  const { execute: handleVerification, isPending, error } = useServerAction(verifyEmailAction, {
+  const {
+    execute: handleVerification,
+    isPending,
+    error,
+  } = useServerAction(verifyEmailAction, {
     onError: ({ err }) => {
       toast.dismiss();
       toast.error(err.message || "Failed to verify email");
@@ -48,7 +58,7 @@ export default function VerifyEmailClientComponent() {
         router.push("/sign-in");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    //// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   if (isPending) {
@@ -100,7 +110,8 @@ export default function VerifyEmailClientComponent() {
           <CardHeader>
             <CardTitle>Invalid verification link</CardTitle>
             <CardDescription>
-              The verification link is invalid. Please request a new verification email.
+              The verification link is invalid. Please request a new
+              verification email.
             </CardDescription>
           </CardHeader>
           <CardContent>

@@ -71,7 +71,7 @@ graph TD
 3.  **Initialize Better-Auth in `src/lib/auth.ts` (new file):**
     - Import `betterAuth` and `drizzleAdapter`.
     - Configure the Drizzle adapter with the `DB` binding from Cloudflare Workers and `provider: "sqlite"`.
-    - Implement `secondaryStorage` to use the existing Cloudflare KV (`KV_BINDING`) via `src/utils/kv-session.ts`. This will involve creating an object with `get`, `set`, and `delete` methods that wrap the `kv.get`, `kv.put`, and `kv.delete` functions from `src/utils/kv-session.ts`.
+    - Implement `secondaryStorage` to use the existing Cloudflare KV (`NEXT_INC_CACHE_KV`) via `src/utils/kv-session.ts`. This will involve creating an object with `get`, `set`, and `delete` methods that wrap the `kv.get`, `kv.put`, and `kv.delete` functions from `src/utils/kv-session.ts`.
     - Define `rpID`, `rpName`, `origin` for passkey configuration.
     - Set `session.storeSessionInDatabase: false` to ensure sessions are primarily stored in KV.
 
