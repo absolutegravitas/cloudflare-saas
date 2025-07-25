@@ -1,7 +1,12 @@
 "use server";
 
 import { z } from "zod";
-import { createTeamRole, deleteTeamRole, getTeamRoles, updateTeamRole } from "@/server/team-roles";
+import {
+  createTeamRole,
+  deleteTeamRole,
+  getTeamRoles,
+  updateTeamRole,
+} from "@/server/team-roles";
 import { ZSAError, createServerAction } from "zsa";
 
 // Create role schema
@@ -9,8 +14,10 @@ const createRoleSchema = z.object({
   teamId: z.string().min(1, "Team ID is required"),
   name: z.string().min(1, "Name is required").max(255, "Name is too long"),
   description: z.string().max(1000, "Description is too long").optional(),
-  permissions: z.array(z.string()).min(1, "At least one permission is required"),
-  metadata: z.record(z.unknown()).optional(),
+  permissions: z
+    .array(z.string())
+    .min(1, "At least one permission is required"),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 // Update role schema
@@ -18,10 +25,17 @@ const updateRoleSchema = z.object({
   teamId: z.string().min(1, "Team ID is required"),
   roleId: z.string().min(1, "Role ID is required"),
   data: z.object({
-    name: z.string().min(1, "Name is required").max(255, "Name is too long").optional(),
+    name: z
+      .string()
+      .min(1, "Name is required")
+      .max(255, "Name is too long")
+      .optional(),
     description: z.string().max(1000, "Description is too long").optional(),
-    permissions: z.array(z.string()).min(1, "At least one permission is required").optional(),
-    metadata: z.record(z.unknown()).optional(),
+    permissions: z
+      .array(z.string())
+      .min(1, "At least one permission is required")
+      .optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
   }),
 });
 
@@ -50,10 +64,7 @@ export const getTeamRolesAction = createServerAction()
         throw error;
       }
 
-      throw new ZSAError(
-        "INTERNAL_SERVER_ERROR",
-        "Failed to get team roles"
-      );
+      throw new ZSAError("INTERNAL_SERVER_ERROR", "Failed to get team roles");
     }
   });
 
@@ -73,10 +84,7 @@ export const createRoleAction = createServerAction()
         throw error;
       }
 
-      throw new ZSAError(
-        "INTERNAL_SERVER_ERROR",
-        "Failed to create role"
-      );
+      throw new ZSAError("INTERNAL_SERVER_ERROR", "Failed to create role");
     }
   });
 
@@ -96,10 +104,7 @@ export const updateRoleAction = createServerAction()
         throw error;
       }
 
-      throw new ZSAError(
-        "INTERNAL_SERVER_ERROR",
-        "Failed to update role"
-      );
+      throw new ZSAError("INTERNAL_SERVER_ERROR", "Failed to update role");
     }
   });
 
@@ -119,9 +124,6 @@ export const deleteRoleAction = createServerAction()
         throw error;
       }
 
-      throw new ZSAError(
-        "INTERNAL_SERVER_ERROR",
-        "Failed to delete role"
-      );
+      throw new ZSAError("INTERNAL_SERVER_ERROR", "Failed to delete role");
     }
   });
